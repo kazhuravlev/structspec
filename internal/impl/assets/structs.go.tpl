@@ -9,25 +9,39 @@ func (f Field) String() string {return string(f)}
 func (f Field) S() string                   { return string(f) }
 
 {{ range .Structs }}
+	{{ $struct := . }}
 
-type {{ .Name }}Spec struct {
-     {{ range .Fields -}}
-		{{ .Name }} Field
+	{{/* Render struct for each tag */}}
+	{{ range .Tags -}}
+		type {{ $struct.Name }}{{.Name}}Spec struct {
+			{{ range .Fields -}}
+				{{.Name}} Field
+			{{end}}
+		}
 	{{ end }}
-}
 
-// F returns fields spec for struct {{ .Name }}
-func ({{ .Name }}) F() {{ .Name }}Spec {
-	return {{ .Name }}F()
-}
-
-// {{ .Name }}F is short version of {{ .Name }}{}.F()
-func {{ .Name }}F() {{ .Name }}Spec {
-	return {{ .Name }}Spec{
-		{{ range .Fields -}}
-            {{ .Name }}: "{{ .Name }}",
+	{{/* Render struct which contains all "tag structs" from prev step */}}
+	type {{ .Name }}Spec struct {
+		{{ range .Tags -}}
+			{{ .Name }} {{ $struct.Name }}{{.Name}}Spec
 		{{ end }}
 	}
-}
 
+    // {{ .Name }}F is short version of {{ .Name }}{}.F()
+    func {{ .Name }}F() {{ .Name }}Spec {
+    	return {{ .Name }}Spec{
+            {{ range .Tags -}}
+                {{.Name}}: {{ $struct.Name }}{{.Name}}Spec{
+                    {{ range .Fields -}}
+                        {{.Name}}: "{{.Value}}",
+                    {{end}}
+                },
+            {{ end }}
+    	}
+    }
+
+    // F returns fields spec for struct {{ .Name }}
+    func ({{ .Name }}) F() {{ .Name }}Spec {
+        return {{ .Name }}F()
+    }
 {{ end }}

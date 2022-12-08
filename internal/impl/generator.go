@@ -2,12 +2,6 @@ package impl
 
 import (
 	"github.com/kazhuravlev/structspec/internal/errorsh"
-	"github.com/kazhuravlev/structspec/internal/impl/assets"
-	"text/template"
-)
-
-var (
-	structsTpl = template.Must(template.New("structs.go.tpl").Parse(assets.StructsTemplate))
 )
 
 func Generate(opts Options) error {
@@ -41,16 +35,4 @@ func Generate(opts Options) error {
 	}
 
 	return nil
-}
-
-func adaptTemplateData(structs []Struct, packageName string, tags []string) templateData {
-	return templateData{
-		PackageName: packageName,
-		Structs:     structs,
-	}
-}
-
-type templateData struct {
-	PackageName string
-	Structs     []Struct
 }
