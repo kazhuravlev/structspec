@@ -34,9 +34,23 @@ func Generate(opts Options) error {
 
 	targetStructs := filterStructs(allStructs, opts.includeStructs, opts.ignoreStructs)
 
-	if err := renderTo(targetStructs, outPackageName, opts.outFilename); err != nil {
+	templateData := adaptTemplateData(targetStructs, outPackageName, opts.tags)
+
+	if err := renderTo(templateData, opts.outFilename); err != nil {
 		return errorsh.Wrap(err, "render output")
 	}
 
 	return nil
+}
+
+func adaptTemplateData(structs []Struct, packageName string, tags []string) templateData {
+	return templateData{
+		PackageName: packageName,
+		Structs:     structs,
+	}
+}
+
+type templateData struct {
+	PackageName string
+	Structs     []Struct
 }

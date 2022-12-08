@@ -168,16 +168,8 @@ func filterStructs(structs []Struct, included, excluded []string) []Struct {
 	return res
 }
 
-func renderTo(structs []Struct, packageName, outFilename string) error {
-	templateContext := struct {
-		PackageName string
-		Structs     []Struct
-	}{
-		PackageName: packageName,
-		Structs:     structs,
-	}
-
-	rendered, err := render(templateContext, structsTpl)
+func renderTo(tplData templateData, outFilename string) error {
+	rendered, err := render(tplData, structsTpl)
 	if err != nil {
 		return errorsh.Wrap(err, "render output")
 	}
