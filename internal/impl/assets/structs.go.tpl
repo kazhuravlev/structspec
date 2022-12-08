@@ -8,6 +8,33 @@ func (f Field) String() string {return string(f)}
 // S - short version of String
 func (f Field) S() string                   { return string(f) }
 
+type ISpec interface {
+    GetTags() []string
+	// GetTagFields returns list of fields by tag key.
+	GetTagFields(tagKey string) ([]Field, bool)
+	GetTagField(tagKey, fieldName string) (Field, bool)
+}
+
+// GetAllSpecs returns list of all generated specs (high-level).
+func GetAllSpecs() []ISpec {
+	return []ISpec{
+        {{ range .Structs -}}
+            {{.Name}}F(),
+        {{ end }}
+    }
+}
+
+func GetSpecByStructName(structName string) (ISpec, bool) {
+    switch structName {
+        default:
+            return nil, false
+        {{ range .Structs -}}
+            case "{{ .Name }}":
+                return {{.Name}}F(), true
+        {{ end }}
+    }
+}
+
 {{ range .Structs }}
 	{{ $struct := . }}
 
@@ -17,6 +44,22 @@ func (f Field) S() string                   { return string(f) }
 			{{ range .Fields -}}
 				{{.Name}} Field
 			{{end}}
+		}
+
+		func {{ $struct.Name }}{{.Name}}SpecF() {{ $struct.Name }}{{.Name}}Spec {
+			return {{ $struct.Name }}{{.Name}}Spec{
+                {{ range .Fields -}}
+                    {{.Name}}: "{{.Value}}",
+                {{end}}
+            }
+		}
+
+		func ({{ $struct.Name }}{{.Name}}Spec) Fields() []Field {
+			return []Field{
+                {{ range .Fields -}}
+                    "{{.Value}}",
+                {{end}}
+            }
 		}
 	{{ end }}
 
@@ -31,11 +74,7 @@ func (f Field) S() string                   { return string(f) }
     func {{ .Name }}F() {{ .Name }}Spec {
     	return {{ .Name }}Spec{
             {{ range .Tags -}}
-                {{.Name}}: {{ $struct.Name }}{{.Name}}Spec{
-                    {{ range .Fields -}}
-                        {{.Name}}: "{{.Value}}",
-                    {{end}}
-                },
+                {{.Name}}: {{ $struct.Name }}{{.Name}}SpecF(),
             {{ end }}
     	}
     }
@@ -44,4 +83,44 @@ func (f Field) S() string                   { return string(f) }
     func ({{ .Name }}) F() {{ .Name }}Spec {
         return {{ .Name }}F()
     }
+
+    func (s {{ .Name }}Spec) GetTags() []string {
+        return []string{
+            {{ range .Tags -}}
+                "{{ .Name }}",
+            {{ end }}
+        }
+    }
+
+    func (s {{ .Name }}Spec) GetTagFields(tagKey string) ([]Field, bool) {
+        switch tagKey {
+        default:
+            return nil, false
+        {{ range .Tags -}}
+            case "{{ .Name }}":
+                return {{ $struct.Name }}{{.Name}}SpecF().Fields(), true
+        {{ end }}
+        }
+    }
+
+    func (s {{ .Name }}Spec) GetTagField(tagKey, fieldName string) (Field, bool) {
+        switch tagKey {
+            default:
+                return "", false
+            {{ range .Tags -}}
+                case "{{ .Name }}":
+                    switch fieldName {
+                        default:
+                            return "", false
+                        {{ range .Fields -}}
+                            case "{{ .Name }}":
+                                return "{{ .Value }}", true
+                        {{ end }}
+                    }
+            {{ end }}
+        }
+    }
+
 {{ end }}
+
+
