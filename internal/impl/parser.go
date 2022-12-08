@@ -16,9 +16,9 @@ import (
 	"text/template"
 )
 
-var ErrNotAStruct = errors.New("not a struct")
+var errNotAStruct = errors.New("not a struct")
 
-func ParsePackageName(source string) (string, error) {
+func parsePackageName(source string) (string, error) {
 	const mode = packages.NeedTypes | packages.NeedTypesInfo | packages.NeedName
 	pkgs, err := packages.Load(&packages.Config{Mode: mode}, source)
 	if err != nil {
@@ -32,7 +32,7 @@ func ParsePackageName(source string) (string, error) {
 	return pkgs[0].Name, nil
 }
 
-func ParseFiles(source string) ([]Struct, error) {
+func parseFiles(source string) ([]Struct, error) {
 	dirEntries, err := os.ReadDir(source)
 	if err != nil {
 		return nil, errorsh.Wrap(err, "read source directory")
@@ -54,7 +54,7 @@ func ParseFiles(source string) ([]Struct, error) {
 			return nil, errorsh.Wrap(err, "cannot parse source file")
 		}
 
-		fileStructs, err := ParseFile(dstFile)
+		fileStructs, err := parseFile(dstFile)
 		if err != nil {
 			return nil, errorsh.Wrap(err, "cannot read contexts")
 		}
@@ -65,7 +65,7 @@ func ParseFiles(source string) ([]Struct, error) {
 	return structs, nil
 }
 
-func ParseFile(f *dst.File) ([]Struct, error) {
+func parseFile(f *dst.File) ([]Struct, error) {
 	var errInspect error
 	var structs []Struct
 	dst.Inspect(f, func(node dst.Node) bool {
@@ -74,13 +74,13 @@ func ParseFile(f *dst.File) ([]Struct, error) {
 			return true
 		}
 
-		structObj, err := ParseStruct(typeDecl)
+		structObj, err := parseStruct(typeDecl)
 		if err == nil {
 			structs = append(structs, *structObj)
 			return true
 		}
 
-		if errors.Is(err, ErrNotAStruct) {
+		if errors.Is(err, errNotAStruct) {
 			return true
 		}
 
@@ -94,17 +94,17 @@ func ParseFile(f *dst.File) ([]Struct, error) {
 	return structs, nil
 }
 
-func ParseStruct(typeDecl *dst.TypeSpec) (*Struct, error) {
+func parseStruct(typeDecl *dst.TypeSpec) (*Struct, error) {
 	structDecl, ok := typeDecl.Type.(*dst.StructType)
 	if !ok {
-		return nil, ErrNotAStruct
+		return nil, errNotAStruct
 	}
 
 	structName := typeDecl.Name
 
 	fields := make([]Field, 0, len(structDecl.Fields.List))
 	for _, dstField := range structDecl.Fields.List {
-		field, err := ParseStructField(dstField)
+		field, err := parseStructField(dstField)
 		if err != nil {
 			return nil, errorsh.Wrapf(err, "parse field '%v' of struct '%s'", dstField, structName)
 		}
@@ -118,7 +118,7 @@ func ParseStruct(typeDecl *dst.TypeSpec) (*Struct, error) {
 	}, nil
 }
 
-func ParseStructField(f *dst.Field) (*Field, error) {
+func parseStructField(f *dst.Field) (*Field, error) {
 	fieldName := f.Names[0].Name
 
 	var tagLine string
@@ -142,7 +142,7 @@ func ParseStructField(f *dst.Field) (*Field, error) {
 	}, nil
 }
 
-func FilterStructs(structs []Struct, included, excluded []string) []Struct {
+func filterStructs(structs []Struct, included, excluded []string) []Struct {
 	includedIndex := slice2map(included)
 	excludedIndex := slice2map(excluded)
 
@@ -168,7 +168,7 @@ func FilterStructs(structs []Struct, included, excluded []string) []Struct {
 	return res
 }
 
-func RenderTo(structs []Struct, packageName, outFilename string) error {
+func renderTo(structs []Struct, packageName, outFilename string) error {
 	templateContext := struct {
 		PackageName string
 		Structs     []Struct
@@ -188,7 +188,7 @@ func RenderTo(structs []Struct, packageName, outFilename string) error {
 	}
 
 	// TODO: write to file
-	if err := writeFileToDir(outFilename, rendered); err != nil {
+	if err := writeFile(outFilename, rendered); err != nil {
 		return errorsh.Wrap(err, "write output")
 	}
 
@@ -212,7 +212,7 @@ func render(data interface{}, t *template.Template) (string, error) {
 	return result, nil
 }
 
-func writeFileToDir(filename, body string) error {
+func writeFile(filename, body string) error {
 	dirPath := filepath.Dir(filename)
 
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {

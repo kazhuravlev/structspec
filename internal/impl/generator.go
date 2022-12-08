@@ -19,7 +19,7 @@ func Generate(opts Options) error {
 	if opts.outPackage != "" {
 		outPackageName = opts.outPackage
 	} else {
-		packageName, err := ParsePackageName(opts.source)
+		packageName, err := parsePackageName(opts.source)
 		if err != nil {
 			return errorsh.Wrap(err, "parse package name from source")
 		}
@@ -27,14 +27,14 @@ func Generate(opts Options) error {
 		outPackageName = packageName
 	}
 
-	allStructs, err := ParseFiles(opts.source)
+	allStructs, err := parseFiles(opts.source)
 	if err != nil {
 		return errorsh.Wrap(err, "parse files")
 	}
 
-	targetStructs := FilterStructs(allStructs, opts.includeStructs, opts.ignoreStructs)
+	targetStructs := filterStructs(allStructs, opts.includeStructs, opts.ignoreStructs)
 
-	if err := RenderTo(targetStructs, outPackageName, opts.outFilename); err != nil {
+	if err := renderTo(targetStructs, outPackageName, opts.outFilename); err != nil {
 		return errorsh.Wrap(err, "render output")
 	}
 
