@@ -65,10 +65,16 @@ import "fmt"
 
 func ExampleGetUserByID(id string) {
 	queryTpl := `select %s, %s from users where %s = ?`
-	query := fmt.Sprintf(queryTpl, structs.UserSpecData.Sql.ID, structs.UserSpecData.Sql.Username, structs.UserSpecData.Sql.ID)
+	query := fmt.Sprintf(
+		queryTpl,
+		structs.UserSpecData.Sql.ID,
+		structs.UserSpecData.Sql.Username,
+		structs.UserSpecData.Sql.ID,
+	)
 	fmt.Println(query)
 	// select id, username from users where id = ?
 }
+
 ```
 
 This tool guarantees you never forget to update your queries after updating
