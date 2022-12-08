@@ -13,6 +13,7 @@ import (
 	"golang.org/x/tools/imports"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"text/template"
@@ -148,26 +149,26 @@ func parseStructField(f *dst.Field) (*Field, error) {
 	}, nil
 }
 
-func filterStructs(structs []Struct, included, excluded []string) []Struct {
-	includedIndex := slice2map(included)
-	excludedIndex := slice2map(excluded)
+func filterStructs(structs []Struct, includedRe, excludedRe []string) []Struct {
+	isIncluded := func(string) bool { return true }
+	isExcluded := func(string) bool { return false }
+
+	if len(includedRe) != 0 {
+		isIncluded = buildIndexFunc(includedRe)
+	}
+	if len(excludedRe) != 0 {
+		isExcluded = buildIndexFunc(excludedRe)
+	}
 
 	res := make([]Struct, 0, len(structs))
 	for _, structObj := range structs {
 		// NOTE: exclude rule has high priority
-		if _, ok := excludedIndex[structObj.Name]; ok {
+		if isExcluded(structObj.Name) {
 			continue
 		}
 
-		// NOTE: empty `includedIndex` means "include all"
-		if len(includedIndex) == 0 {
+		if isIncluded(structObj.Name) {
 			res = append(res, structObj)
-			continue
-		}
-
-		if _, ok := includedIndex[structObj.Name]; ok {
-			res = append(res, structObj)
-			continue
 		}
 	}
 
@@ -227,13 +228,21 @@ func writeFile(filename, body string) error {
 	return nil
 }
 
-func slice2map(slice []string) map[string]struct{} {
-	res := make(map[string]struct{}, len(slice))
+func buildIndexFunc(slice []string) func(string) bool {
+	patternMatchers := make([]func(string) bool, len(slice))
 	for i := range slice {
-		res[slice[i]] = struct{}{}
+		patternMatchers[i] = regexp.MustCompile(slice[i]).MatchString
 	}
 
-	return res
+	return func(s string) bool {
+		for _, patternMatcher := range patternMatchers {
+			if patternMatcher(s) {
+				return true
+			}
+		}
+
+		return false
+	}
 }
 
 func adaptTemplateData(structs []Struct, packageName string, tags []string) TemplateData {
