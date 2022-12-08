@@ -39,7 +39,7 @@ func parsePackageName(source string) (string, error) {
 	return pkgs[0].Name, nil
 }
 
-func parseFiles(source string) ([]Struct, error) {
+func parseFiles(source, ignore string) ([]Struct, error) {
 	dirEntries, err := os.ReadDir(source)
 	if err != nil {
 		return nil, errorsh.Wrap(err, "read source directory")
@@ -48,6 +48,10 @@ func parseFiles(source string) ([]Struct, error) {
 	var structs []Struct
 	for _, entry := range dirEntries {
 		if entry.IsDir() {
+			continue
+		}
+
+		if entry.Name() == ignore {
 			continue
 		}
 

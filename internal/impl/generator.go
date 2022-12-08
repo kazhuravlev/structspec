@@ -21,7 +21,7 @@ func Generate(opts Options) error {
 		outPackageName = packageName
 	}
 
-	allStructs, err := parseFiles(opts.source)
+	allStructs, err := parseFiles(opts.source, opts.outFilename)
 	if err != nil {
 		return errorsh.Wrap(err, "parse files")
 	}
