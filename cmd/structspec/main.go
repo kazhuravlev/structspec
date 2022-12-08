@@ -16,12 +16,12 @@ const (
 )
 
 var (
+	// TODO: get from CI
 	version = "__from_source__"
 )
 
 func main() {
 	a := cli.NewApp()
-	// TODO: get from CI
 	a.Version = version
 	a.Name = "structspec"
 	a.Usage = "Generate structs specification. github.com/kazhuravlev/structspec"

@@ -179,7 +179,6 @@ func renderTo(tplData templateData, outFilename string) error {
 		return nil
 	}
 
-	// TODO: write to file
 	if err := writeFile(outFilename, rendered); err != nil {
 		return errorsh.Wrap(err, "write output")
 	}
