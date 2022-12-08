@@ -12,7 +12,7 @@ validating JSON/XML/etc fields.
 ## Installation
 
 ```shell
-go install github.com/kazhuravlev/structspec@latest
+go install github.com/kazhuravlev/structspec/cmd/structspec@latest
 ```
 
 ## Usage
