@@ -9,6 +9,36 @@ It allows mentioning some fields of source structs without the need to remember
 the field names. This especially helps when you write queries to the database,
 validating JSON/XML/etc fields.
 
+## Installation
+
+```shell
+go install github.com/kazhuravlev/structspec@latest
+```
+
+## Usage
+
+```shell
+$ structspec gen --help
+NAME:
+   structspec gen - Generate and write result
+
+USAGE:
+   structspec gen [command options] [arguments...]
+
+OPTIONS:
+   --src value                          Source directory
+   --structs value [ --structs value ]  Which structs should be included. Default: all founded
+   --ignore value [ --ignore value ]    Which structs should be ignored. Default: no one
+   --tag value [ --tag value ]          Which tags should be used for generation. Default: all founded
+   --out-file value                     Output filename
+   --out-pkg value                      Output package name
+   --help, -h                           show help (default: false)
+
+$ structspec gen \
+  --src ./path/to/package/with/target/structs \
+  --out-pkg mypackage
+```
+
 ## Example
 
 Source struct:
