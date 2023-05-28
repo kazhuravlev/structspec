@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	argSrc            = "src"
+	argSrcDir         = "src"
+	argFilesPattern   = "files"
 	argIncludeStructs = "structs"
 	argIgnoreStructs  = "ignore"
 	argTag            = "tag"
@@ -32,10 +33,16 @@ func main() {
 			Action: cmdGenerate,
 			Flags: []cli.Flag{
 				&cli.StringFlag{
-					Name:     argSrc,
+					Name:     argSrcDir,
 					Value:    "",
 					Usage:    "Source directory",
 					Required: true,
+				},
+				&cli.StringSliceFlag{
+					Name:     argFilesPattern,
+					Value:    cli.NewStringSlice("*"),
+					Usage:    "Include only specified files (glob syntax)",
+					Required: false,
 				},
 				&cli.StringSliceFlag{
 					Name:     argIncludeStructs,
@@ -77,7 +84,8 @@ func main() {
 }
 
 func cmdGenerate(c *cli.Context) error {
-	sourceDirectory := c.String(argSrc)
+	sourceDirectory := c.String(argSrcDir)
+	includedFiles := c.StringSlice(argFilesPattern)
 	outFilename := c.String(argOutFilename)
 	outPackage := c.String(argOutPackage)
 	includeStructs := c.StringSlice(argIncludeStructs)
@@ -86,6 +94,7 @@ func cmdGenerate(c *cli.Context) error {
 
 	err := impl.Generate(impl.NewOptions(
 		impl.WithSource(sourceDirectory),
+		impl.WithIncludedFiles(includedFiles),
 		impl.WithOutFilename(outFilename),
 		impl.WithOutPackage(outPackage),
 		impl.WithIncludeStructs(includeStructs),

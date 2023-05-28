@@ -39,8 +39,27 @@ func parsePackageName(source string) (string, error) {
 	return pkgs[0].Name, nil
 }
 
-func parseFiles(source, ignore string) ([]Struct, error) {
-	dirEntries, err := os.ReadDir(source)
+func parseFiles(sourceDir, ignoredFile string, includedFiles []string) ([]Struct, error) {
+	isIncluded := func(filename string) bool {
+		if filename == ignoredFile {
+			return false
+		}
+
+		for i := range includedFiles {
+			ok, err := filepath.Match(includedFiles[i], filename)
+			if err != nil {
+				return false
+			}
+
+			if ok {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	dirEntries, err := os.ReadDir(sourceDir)
 	if err != nil {
 		return nil, errorsh.Wrap(err, "read source directory")
 	}
@@ -51,11 +70,11 @@ func parseFiles(source, ignore string) ([]Struct, error) {
 			continue
 		}
 
-		if entry.Name() == ignore {
+		if !isIncluded(entry.Name()) {
 			continue
 		}
 
-		fileContents, err := os.ReadFile(filepath.Join(source, entry.Name()))
+		fileContents, err := os.ReadFile(filepath.Join(sourceDir, entry.Name()))
 		if err != nil {
 			return nil, errorsh.Wrap(err, "cannot read file")
 		}

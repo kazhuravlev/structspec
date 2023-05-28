@@ -22,6 +22,12 @@ func WithSource(opt string) OptOptionsSetter {
 	}
 }
 
+func WithIncludedFiles(opt []string) OptOptionsSetter {
+	return func(o *Options) {
+		o.includedFiles = opt
+	}
+}
+
 func WithIncludeStructs(opt []string) OptOptionsSetter {
 	return func(o *Options) {
 		o.includeStructs = opt
