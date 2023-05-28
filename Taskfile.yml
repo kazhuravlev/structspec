@@ -14,10 +14,10 @@ vars:
   GOBIN:
     sh: "echo `pwd`/{{ .TOOL_BIN_DIR }}"
 
-  TOOL_LINT_SRC: github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1
+  TOOL_LINT_SRC: github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2
   TOOL_LINT: ./{{ .TOOL_BIN_DIR }}/golangci-lint
 
-  TOOL_OPTIONS_GEN_SRC: github.com/kazhuravlev/options-gen/cmd/options-gen@v0.28.0
+  TOOL_OPTIONS_GEN_SRC: github.com/kazhuravlev/options-gen/cmd/options-gen@v0.28.4
   TOOL_OPTIONS_GEN: ./{{ .TOOL_BIN_DIR }}/options-gen
 
 tasks:
