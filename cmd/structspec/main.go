@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/kazhuravlev/structspec/internal/impl"
 	"github.com/urfave/cli/v3"
 	"os"
@@ -22,7 +23,7 @@ var (
 )
 
 func main() {
-	a := cli.NewApp()
+	a := &cli.Command{}
 	a.Version = version
 	a.Name = "structspec"
 	a.Usage = "Generate structs specification. github.com/kazhuravlev/structspec"
@@ -40,7 +41,7 @@ func main() {
 				},
 				&cli.StringSliceFlag{
 					Name:     argFilesPattern,
-					Value:    cli.NewStringSlice("*"),
+					Value:    []string{"*"},
 					Usage:    "Include only specified files (glob syntax)",
 					Required: false,
 				},
@@ -78,12 +79,12 @@ func main() {
 		},
 	}
 
-	if err := a.Run(os.Args); err != nil {
+	if err := a.Run(context.Background(), os.Args); err != nil {
 		panic("cannot run command: " + err.Error())
 	}
 }
 
-func cmdGenerate(c *cli.Context) error {
+func cmdGenerate(ctx context.Context, c *cli.Command) error {
 	sourceDirectory := c.String(argSrcDir)
 	includedFiles := c.StringSlice(argFilesPattern)
 	outFilename := c.String(argOutFilename)
