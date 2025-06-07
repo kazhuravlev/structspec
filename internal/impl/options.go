@@ -1,6 +1,6 @@
 package impl
 
-//go:generate options-gen -from-struct=Options
+//go:generate toolset run options-gen -from-struct=Options
 type Options struct {
 	source         string
 	includedFiles  []string

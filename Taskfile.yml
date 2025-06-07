@@ -4,21 +4,6 @@ version: '3'
 
 silent: true
 
-vars:
-  GO_MODULE: github.com/kazhuravlev/structspec
-  GO_FILES:
-    sh: find . -type f -name '*.go' -not -path "./.gocache/*" -not -path "./.go/*" -not -path "_generated.go" | tr "\n" " "
-
-  TOOL_BIN_DIR: ./bin/tools
-
-  GOBIN:
-    sh: "echo `pwd`/{{ .TOOL_BIN_DIR }}"
-
-  TOOL_LINT_SRC: github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2
-  TOOL_LINT: ./{{ .TOOL_BIN_DIR }}/golangci-lint
-
-  TOOL_OPTIONS_GEN_SRC: github.com/kazhuravlev/options-gen/cmd/options-gen@v0.28.4
-  TOOL_OPTIONS_GEN: ./{{ .TOOL_BIN_DIR }}/options-gen
 
 tasks:
   default:
@@ -53,10 +38,7 @@ tasks:
     run: once
     cmds:
       - echo "- Run install tools"
-      - rm -rf {{ .TOOL_BIN_DIR }}
-      - mkdir -p {{ .TOOL_BIN_DIR }}
-      - export GOBIN="{{.GOBIN}}" && go install {{ .TOOL_LINT_SRC }}
-      - export GOBIN="{{.GOBIN}}" && go install {{ .TOOL_OPTIONS_GEN_SRC }}
+      - go run github.com/kazhuravlev/toolset/cmd/toolset@latest sync
 
   generate:
     desc: Generate code
@@ -65,7 +47,7 @@ tasks:
         sh: "echo `pwd`/{{ .TOOL_BIN_DIR }}:$PATH"
     cmds:
       - echo "- Generate code"
-      - PATH=$SEARCH_BIN_PATH && go generate ./...
+      - go generate ./...
 
   lint:
     desc: Run linter
@@ -73,7 +55,7 @@ tasks:
       - "tools:install"
     cmds:
       - echo "- Lint"
-      - "{{ .TOOL_LINT }} run --fix ./..."
+      - toolset run golangci-lint run --fix ./...
 
   install:
     run: once
